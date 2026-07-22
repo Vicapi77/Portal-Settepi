@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Distancia VA | Settepi</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#f0f2f7;font-family:'Inter',sans-serif}
+nav{background:#1f2937;padding:0 28px;display:flex;align-items:center;height:48px;gap:14px;position:sticky;top:0;z-index:2000;box-shadow:0 2px 8px rgba(0,0,0,.3);flex-shrink:0;font-family:'Inter',sans-serif;}
+.nav-logo{color:#84cc16;font-weight:800;font-size:16px;text-decoration:none;}
+.nav-sep{color:#4b5563;font-size:14px;font-weight:300;}
+.nav-page{color:#e5e7eb;font-size:13px;font-weight:600;}
+.layout{display:flex}
+.sidebar{width:220px;background:#fff;border-right:1px solid #dde3f0;padding:16px;height:calc(100vh - 50px);position:sticky;top:50px;overflow-y:auto;flex-shrink:0}
+.sb-title{font-size:11px;font-weight:700;text-transform:uppercase;color:#6b7a99;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+.sb-reset-btn{background:transparent;border:none;cursor:pointer;font-size:16px;color:#6b7a99;line-height:1}
+.fg{margin-bottom:13px}
+.fg label{font-size:10px;font-weight:700;color:#6b7a99;display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.3px}
+.fg select{width:100%;padding:7px 8px;border:1px solid #dde3f0;border-radius:6px;font-size:12px;font-family:'Inter',sans-serif;background:#fff;color:#222d42;cursor:pointer;outline:none}
+.fg select:focus{border-color:#84cc16}
+.fg input[type=text]{width:100%;padding:7px 8px;border:1px solid #dde3f0;border-radius:6px;font-size:12px;font-family:'Inter',sans-serif;color:#222d42;outline:none}
+.fg input[type=text]:focus{border-color:#84cc16}
+.fg input[type=range]{width:100%;accent-color:#84cc16;cursor:pointer;margin-top:2px}
+.meta-display{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px}
+.meta-val{font-size:18px;font-weight:700;color:#222d42}
+.meta-badge{background:#e8f5e0;color:#1a6b35;font-size:10px;font-weight:700;padding:2px 8px;border-radius:10px}
+.range-labels{display:flex;justify-content:space-between;font-size:10px;color:#9ca3af;margin-top:2px}
+.btn-reset{width:100%;padding:7px;border:1px solid #dde3f0;border-radius:6px;background:transparent;font-size:12px;cursor:pointer;margin-top:6px;color:#6b7a99;font-family:'Inter',sans-serif}
+.btn-reset:hover{background:#f0f2f7}
+.sidebar-stat{background:#f8faff;border-radius:8px;padding:10px;margin-top:12px}
+.sidebar-stat-lbl{font-size:10px;color:#6b7a99;margin-bottom:4px;font-weight:600;text-transform:uppercase}
+.sidebar-stat-val{font-size:20px;font-weight:700;color:#222d42}
+.sidebar-stat-sub{color:#6b7a99;font-size:10px;margin-top:2px}
+.compliance-bar{height:6px;background:#eee;border-radius:3px;margin-top:6px;overflow:hidden}
+.compliance-fill{height:100%;border-radius:3px;transition:width .4s}
+.sidebar-sep{height:1px;background:#f0f2f7;margin:12px 0}
+.main{flex:1;padding:20px;display:flex;flex-direction:column;gap:20px;min-width:0}
+.loading-overlay{position:fixed;inset:0;background:#f0f2f7;display:flex;align-items:center;justify-content:center;z-index:9999}
+.loading-overlay.hidden{display:none}
+.loading-box{background:#fff;padding:32px;border-radius:16px;text-align:center}
+.loading-spinner{width:40px;height:40px;border:3px solid #dde3f0;border-top-color:#84cc16;border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.kpi-section{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.kpi-chip{background:#222d42;border-radius:12px;padding:16px;color:#fff;position:relative;overflow:hidden}
+.kpi-chip::after{content:'';position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.03)}
+.kpi-chip-lbl{font-size:10px;text-transform:uppercase;opacity:.6;margin-bottom:8px;letter-spacing:.5px}
+.kpi-chip-val{font-size:28px;font-weight:700;color:#84cc16}
+.kpi-chip-val.red{color:#f87171}
+.kpi-chip-val.amber{color:#fbbf24}
+.kpi-chip-sub{font-size:11px;opacity:.7;margin-top:6px}
+.kpi-chip-km{font-size:12px;font-weight:600;color:rgba(255,255,255,.5);margin-top:8px;padding-top:8px;border-top:1px solid rgba(255,255,255,.12);letter-spacing:.2px}
+.section-divider{display:flex;align-items:center;gap:12px;margin:4px 0}
+.section-divider-title{font-weight:700;font-size:13px;white-space:nowrap}
+.section-divider-sub{font-size:11px;color:#6b7a99;white-space:nowrap}
+.section-divider-line{flex:1;height:1px;background:#dde3f0}
+.charts-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.chart-card{background:#fff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.08);overflow:hidden}
+.chart-card.full{grid-column:1/-1}
+.chart-hdr{padding:12px 20px;border-bottom:1px solid #f0f2f7;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.chart-hdr-title{font-weight:700;font-size:13px}
+.chart-hdr-sub{font-size:11px;color:#6b7a99}
+.chart-wrap{padding:16px;height:280px}
+.chart-wrap.tall{height:320px}
+.table-card{background:#fff;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.08);overflow:hidden}
+.table-hdr{padding:12px 20px;border-bottom:1px solid #dde3f0;display:flex;justify-content:space-between;align-items:center}
+.table-hdr-title{font-weight:700;font-size:13px}
+.table-count{font-size:11px;color:#6b7a99;background:#f0f2f7;padding:3px 10px;border-radius:20px}
+.table-scroll{overflow-x:auto}
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{background:#222d42;color:#fff;padding:8px 12px;font-size:11px;text-align:left;cursor:pointer;user-select:none;white-space:nowrap}
+.data-table th.r{text-align:right}
+.data-table th:hover{background:#374151}
+.data-table td{padding:8px 12px;font-size:12px;border-bottom:1px solid #f0f2f7;white-space:nowrap}
+.data-table td.r{text-align:right}
+.data-table tbody tr:hover{background:#f8faff}
+.pill{display:inline-block;padding:2px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.pill.green{background:#e8f5e0;color:#2e7d32}
+.pill.amber{background:#fff8e1;color:#e65100}
+.pill.red{background:#ffebee;color:#c62828}
+.rank-badge{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:10px;font-weight:700}
+.rank-badge.gold{background:#fef3c7;color:#92400e}
+.rank-badge.silver{background:#f1f5f9;color:#475569}
+.rank-badge.bronze{background:#fef9f0;color:#92400e}
+.rank-badge.rest{background:#f0f2f7;color:#6b7a99}
+.dist-bar-wrap{display:flex;align-items:center}
+.dist-bar-bg{flex:1;height:6px;background:#f0f2f7;border-radius:3px;overflow:hidden;min-width:60px}
+.dist-bar-fill{height:100%;border-radius:3px}
+.err{background:#ffebee;border-left:4px solid #c62828;padding:12px;border-radius:8px}
+.hidden{display:none!important}
+.meta-goal-badge{display:inline-flex;align-items:center;gap:6px;background:#e8f5e0;padding:4px 12px;border-radius:20px;font-size:11px;color:#2e7d32;font-weight:600}
+.fecha-badge{background:#fff;border:1px solid #dde3f0;border-radius:20px;padding:4px 12px;font-size:12px;color:#6b7a99}
+.kpi-header-row{display:flex;justify-content:space-between;align-items:center}
+.kpi-header-row h2{font-size:16px;font-weight:700;color:#222d42}
+.legend-dot{width:12px;height:12px;border-radius:2px;display:inline-block}
+.legend-item{display:flex;align-items:center;gap:4px;font-size:11px}
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">SETTEPI</a>
+  <span class="nav-sep">|</span>
+  <span class="nav-page">Distancia VA</span>
+</nav>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-box">
+    <div class="loading-spinner"></div>
+    <div style="font-size:13px;color:#6b7a99">Cargando hoja VA...</div>
+  </div>
+</div>
+
+<div class="layout">
+  <!-- ── SIDEBAR ──────────────────────────────────────── -->
+  <aside class="sidebar">
+    <div class="sb-title">FILTROS <button class="sb-reset-btn" onclick="resetFiltros()" title="Limpiar">↺</button></div>
+
+    <!-- Meta slider -->
+    <div class="fg">
+      <label>Meta de distancia</label>
+      <div class="meta-display">
+        <span class="meta-val" id="metaVal">5 km</span>
+        <span class="meta-badge">META</span>
+      </div>
+      <input type="range" id="sliderMeta" min="3" max="7" step="0.5" value="5" oninput="onMetaChange(this.value)">
+      <div class="range-labels"><span>3 km</span><span>7 km</span></div>
+    </div>
+
+    <div class="sidebar-sep"></div>
+
+    <!-- Buscador -->
+    <div class="fg">
+      <label>Buscar operador / unidad</label>
+      <input type="text" id="buscador" placeholder="Nombre o unidad..." oninput="aplicarFiltros()">
+    </div>
+
+    <div class="sidebar-sep"></div>
+
+    <!-- Selects -->
+    <div class="fg">
+      <label>Semana</label>
+      <select id="fSem" onchange="aplicarFiltros()"><option value="">Todas</option></select>
+    </div>
+    <div class="fg">
+      <label>Gerente</label>
+      <select id="fGer" onchange="aplicarFiltros()"><option value="">Todos</option></select>
+    </div>
+    <div class="fg">
+      <label>Planta</label>
+      <select id="fPla" onchange="aplicarFiltros()"><option value="">Todas</option></select>
+    </div>
+    <div class="fg">
+      <label>Ordenar</label>
+      <select id="fOrd" onchange="aplicarFiltros()"><option value="">Todos</option></select>
+    </div>
+
+    <button class="btn-reset" onclick="resetFiltros()">Limpiar filtros</button>
+
+    <!-- Mini stat -->
+    <div class="sidebar-stat" id="sidebarStat" style="display:none">
+      <div class="sidebar-stat-lbl">Cumplimiento</div>
+      <div class="sidebar-stat-val" id="sbPct">–</div>
+      <div class="sidebar-stat-sub" id="sbPctSub"></div>
+      <div class="compliance-bar"><div class="compliance-fill" id="sbBar" style="width:0%"></div></div>
+    </div>
+  </aside>
+
+  <!-- ── MAIN ────────────────────────────────────────── -->
+  <main class="main">
+    <div class="err hidden" id="errBanner">⚠️ <span id="errMsg"></span></div>
+
+    <div class="kpi-header-row">
+      <div style="display:flex;align-items:center;gap:12px">
+        <h2>Distancia al Trabajo · VA</h2>
+        <div class="meta-goal-badge">Meta: <span id="metaHeaderVal" style="color:#1a6b35">≤ 5 km</span></div>
+      </div>
+      <div class="fecha-badge" id="fechaBadge">–</div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-section">
+      <div class="kpi-chip">
+        <div class="kpi-chip-lbl">Total Operadores</div>
+        <div class="kpi-chip-val" id="kpiTotal">–</div>
+        <div class="kpi-chip-sub">operadores únicos</div>
+        <div class="kpi-chip-km" id="kpiTotalKm">–</div>
+      </div>
+      <div class="kpi-chip">
+        <div class="kpi-chip-lbl">Dentro de Meta</div>
+        <div class="kpi-chip-val" id="kpiOk">–</div>
+        <div class="kpi-chip-sub" id="kpiOkSub"></div>
+        <div class="kpi-chip-km" id="kpiOkKm">–</div>
+      </div>
+      <div class="kpi-chip">
+        <div class="kpi-chip-lbl">Fuera de Meta</div>
+        <div class="kpi-chip-val red" id="kpiFuera">–</div>
+        <div class="kpi-chip-sub" id="kpiFueraSub"></div>
+        <div class="kpi-chip-km" id="kpiFueraKm">–</div>
+      </div>
+      <div class="kpi-chip">
+        <div class="kpi-chip-lbl">Distancia Promedio</div>
+        <div class="kpi-chip-val amber" id="kpiProm">–</div>
+        <div class="kpi-chip-sub" id="kpiPromSub">km promedio</div>
+      </div>
+    </div>
+
+    <!-- Gráficas fila 1: Rangos por semana + Gerente -->
+    <div class="charts-row">
+      <div class="chart-card">
+        <div class="chart-hdr">
+          <div>
+            <div class="chart-hdr-title">Distribución por semana y rango</div>
+            <div class="chart-hdr-sub">Operadores únicos · etiqueta = km promedio</div>
+          </div>
+          <div style="display:flex;gap:10px">
+            <div class="legend-item"><span class="legend-dot" style="background:#84cc16"></span>0–meta</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#fbbf24"></span>meta–10</div>
+            <div class="legend-item"><span class="legend-dot" style="background:#f87171"></span>&gt;10</div>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="chartRangos"></canvas></div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-hdr">
+          <div>
+            <div class="chart-hdr-title">Cumplimiento por Gerente</div>
+            <div class="chart-hdr-sub">% operadores dentro de meta</div>
+          </div>
+        </div>
+        <div class="chart-wrap"><canvas id="chartGerente"></canvas></div>
+      </div>
+    </div>
+
+    <!-- Gráfica Planta full -->
+    <div class="chart-card full">
+      <div class="chart-hdr">
+        <div>
+          <div class="chart-hdr-title">Distribución por Planta y rango</div>
+          <div class="chart-hdr-sub">Operadores únicos · etiqueta = km promedio por planta</div>
+        </div>
+        <div style="display:flex;gap:14px">
+          <div class="legend-item"><span class="legend-dot" style="background:#84cc16"></span>0–meta</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#fbbf24"></span>meta–10</div>
+          <div class="legend-item"><span class="legend-dot" style="background:#f87171"></span>&gt;10</div>
+        </div>
+      </div>
+      <div class="chart-wrap tall"><canvas id="chartPlanta"></canvas></div>
+    </div>
+
+    <!-- Gráfica Tendencia full -->
+    <div class="chart-card full">
+      <div class="chart-hdr">
+        <div>
+          <div class="chart-hdr-title">Tendencia semanal · km promedio</div>
+          <div class="chart-hdr-sub">Línea punteada = tendencia lineal (regresión)</div>
+        </div>
+        <div style="display:flex;gap:14px">
+          <div class="legend-item"><span class="legend-dot" style="background:#84cc16"></span>km promedio</div>
+          <div class="legend-item"><span style="width:24px;height:2px;background:#f97316;display:inline-block;border-top:2px dashed #f97316;margin-top:5px"></span><span style="margin-left:4px">tendencia</span></div>
+        </div>
+      </div>
+      <div class="chart-wrap tall"><canvas id="chartTendencia"></canvas></div>
+    </div>
+
+    <!-- Top 20 -->
+    <div class="section-divider">
+      <div class="section-divider-title">🚨 Top 20 peores distancias</div>
+      <div class="section-divider-sub">Mayor km promedio · filtro buscador activo</div>
+      <div class="section-divider-line"></div>
+    </div>
+    <div class="table-card">
+      <div class="table-hdr">
+        <div class="table-hdr-title">Operadores con mayor km promedio</div>
+        <span class="table-count" id="cntTop">–</span>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width:36px">#</th>
+              <th onclick="sortTop('nombre')">Operador ↕</th>
+              <th onclick="sortTop('planta')">Planta ↕</th>
+              <th onclick="sortTop('gerente')">Gerente ↕</th>
+              <th onclick="sortTop('unidad')">Unidad ↕</th>
+              <th onclick="sortTop('ruta')">Ruta ↕</th>
+              <th class="r" onclick="sortTop('dist')">Dist. km ↕</th>
+              <th class="r">Barra</th>
+              <th class="r">Estado</th>
+            </tr>
+          </thead>
+          <tbody id="top20Body"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Tabla completa -->
+    <div class="section-divider">
+      <div class="section-divider-title">Todos los operadores</div>
+      <div class="section-divider-line"></div>
+    </div>
+    <div class="table-card">
+      <div class="table-hdr">
+        <div class="table-hdr-title">Detalle completo · promediado por operador</div>
+        <span class="table-count" id="cntAll">–</span>
+      </div>
+      <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th onclick="sortAll('nombre')">Operador ↕</th>
+              <th onclick="sortAll('planta')">Planta ↕</th>
+              <th onclick="sortAll('gerente')">Gerente ↕</th>
+              <th onclick="sortAll('unidad')">Unidad ↕</th>
+              <th onclick="sortAll('ruta')">Ruta ↕</th>
+              <th class="r" onclick="sortAll('dist')">Dist. km ↕</th>
+              <th class="r">Estado</th>
+            </tr>
+          </thead>
+          <tbody id="allBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────
+const SHEET_ID = '17vV8F2zREM0F_ptYFNm5j8odqZi_bOJlidF-fL5w1GE';
+let META = 5;
+
+// ── ESTADO ───────────────────────────────────────────
+let ROWS = [];
+let OPERADORES = [];
+let sortColTop = 'dist', sortDirTop = -1;
+let sortColAll = 'dist', sortDirAll = -1;
+let chRangos = null, chGerente = null, chPlanta = null, chTend = null;
+
+// ── UTILS ────────────────────────────────────────────
+const $ = id => document.getElementById(id);
+const num = v => { let n = parseFloat(String(v||'').replace(/[,%\s]/g,'')); return isNaN(n)?0:n; };
+const fmt = (n,d=2) => Number(n||0).toFixed(d);
+const cleanH = h => h.replace(/["\u00A0\uFEFF\r]/g,'').replace(/\s+/g,' ').trim().toLowerCase();
+
+function parseCSVLine(line){
+  let cols=[],inQ=false,cur='';
+  for(let c of line){
+    if(c==='"'){inQ=!inQ;}
+    else if(c===','&&!inQ){cols.push(cur.trim());cur='';}
+    else cur+=c;
+  }
+  cols.push(cur.trim());
+  return cols;
+}
+
+// ── PARSE ────────────────────────────────────────────
+function parseCSV(text){
+  if(text.charCodeAt(0)===0xFEFF) text=text.slice(1);
+  let lines=text.split(/\r?\n/).filter(l=>l.trim());
+  if(lines.length<2) throw new Error('Hoja vacía');
+  let headers=parseCSVLine(lines[0]).map(cleanH);
+
+  const find=(...terms)=>{
+    for(let t of terms){ let i=headers.findIndex(h=>h===t); if(i>=0)return i; }
+    for(let t of terms){ let i=headers.findIndex(h=>h.includes(t)); if(i>=0)return i; }
+    return -1;
+  };
+
+  let iDist  =find('distance km','distance');
+  let iGer   =find('gerente');
+  let iPla   =find('planta','plant');
+  let iOrd   =find('ordenar');
+  let iNom   =find('tour driver name','driver name','nombre','operador');
+  let iUnidad=find('unidad','tour unit id','unit id');
+  let iSem   =find('semana','week','sem');
+  let iRuta  =find('ruta','route','service id');
+  if(iNom<0) iNom=0;
+
+  console.log('Cols →',{iDist,iGer,iPla,iOrd,iNom,iUnidad,iSem,iRuta});
+
+  ROWS=[];
+  for(let i=1;i<lines.length;i++){
+    let c=parseCSVLine(lines[i]);
+    if(c.length<2) continue;
+    let nom=(iNom>=0?c[iNom]||'':'').trim();
+    if(!nom) continue;
+    ROWS.push({
+      nombre : nom,
+      dist   : iDist>=0   ? num(c[iDist])                    : 0,
+      gerente: iGer>=0    ? (c[iGer]||'Sin gerente').trim()  : 'Sin gerente',
+      planta : iPla>=0    ? (c[iPla]||'Sin planta').trim()   : 'Sin planta',
+      ordenar: iOrd>=0    ? (c[iOrd]||'–').trim()            : '–',
+      unidad : iUnidad>=0 ? (c[iUnidad]||'–').trim()         : '–',
+      semana : iSem>=0    ? (c[iSem]||'–').trim()            : '–',
+      ruta   : iRuta>=0   ? (c[iRuta]||'–').trim()           : '–',
+    });
+  }
+}
+
+// ── PROMEDIAR por operador ───────────────────────────
+function promediar(filas){
+  let mapa=new Map();
+  filas.forEach(r=>{
+    let k=r.nombre.toLowerCase();
+    if(!mapa.has(k)) mapa.set(k,{...r,_s:r.dist,_n:1});
+    else { let e=mapa.get(k); e._s+=r.dist; e._n++; }
+  });
+  let arr=[];
+  mapa.forEach(e=>arr.push({nombre:e.nombre,dist:e._s/e._n,gerente:e.gerente,planta:e.planta,ordenar:e.ordenar,unidad:e.unidad,semana:e.semana,ruta:e.ruta}));
+  return arr;
+}
+
+// ── FILTROS ──────────────────────────────────────────
+function filteredRows(){
+  let s=$('fSem').value,g=$('fGer').value,p=$('fPla').value,o=$('fOrd').value;
+  return ROWS.filter(r=>{
+    if(s&&r.semana!==s) return false;
+    if(g&&r.gerente!==g) return false;
+    if(p&&r.planta!==p) return false;
+    if(o&&r.ordenar!==o) return false;
+    return true;
+  });
+}
+
+function filteredOps(ops){
+  let q=($('buscador').value||'').toLowerCase().trim();
+  if(!q) return ops;
+  return ops.filter(r=>r.nombre.toLowerCase().includes(q)||r.unidad.toLowerCase().includes(q));
+}
+
+function poblarSelects(){
+  const fill=(id,vals,all)=>{
+    let sel=$(id),cur=sel.value;
+    sel.innerHTML=`<option value="">${all}</option>`
+      +[...new Set(vals)].filter(v=>v&&v!=='–'&&v!=='Sin gerente'&&v!=='Sin planta').sort()
+        .map(v=>`<option value="${v.replace(/"/g,'&quot;')}">${v}</option>`).join('');
+    if(cur) sel.value=cur;
+  };
+  fill('fSem',ROWS.map(r=>r.semana),'Todas');
+  fill('fGer',ROWS.map(r=>r.gerente),'Todos');
+  fill('fPla',ROWS.map(r=>r.planta),'Todas');
+  fill('fOrd',ROWS.map(r=>r.ordenar),'Todos');
+}
+
+function onMetaChange(v){
+  META=parseFloat(v);
+  $('metaVal').textContent=META+' km';
+  $('metaHeaderVal').textContent='≤ '+META+' km';
+  aplicarFiltros();
+}
+
+function resetFiltros(){
+  ['fSem','fGer','fPla','fOrd'].forEach(id=>$(id).value='');
+  $('buscador').value='';
+  $('sliderMeta').value=5;
+  onMetaChange(5);
+}
+
+function aplicarFiltros(){
+  let filas=filteredRows();
+  OPERADORES=promediar(filas);
+  let opsVis=filteredOps(OPERADORES);
+  drawKPIs(opsVis, filas);
+  drawRangos(filas);       // rangos usa filas crudas agrupadas por semana
+  drawGerente(opsVis);
+  drawPlanta(opsVis);
+  drawTendencia(filas);
+  drawTop20(opsVis);
+  drawAll(opsVis);
+}
+
+// ── KPIs ─────────────────────────────────────────────
+function drawKPIs(ops, filas){
+  // conteos y promedio sobre operadores únicos (promediados)
+  let total=ops.length,ok=ops.filter(r=>r.dist<=META).length;
+  let fuera=total-ok,prom=total?ops.reduce((s,r)=>s+r.dist,0)/total:0;
+  let pct=total?ok/total*100:0;
+  // sumas sobre filas crudas para acumular todas las semanas
+  let raw=filas||ops;
+  let sumTotal=raw.reduce((s,r)=>s+r.dist,0);
+  // km ahorrados: cuánto le falta a cada registro dentro de meta para llegar a la meta
+  let sumAhorro=raw.filter(r=>r.dist<=META).reduce((s,r)=>s+(META-r.dist),0);
+  // km excedentes: solo el excedente sobre la meta de cada registro fuera de meta
+  let sumExceso=raw.filter(r=>r.dist>META).reduce((s,r)=>s+(r.dist-META),0);
+  $('kpiTotal').textContent=total.toLocaleString('es-MX');
+  $('kpiTotalKm').textContent=sumTotal.toLocaleString('es-MX',{maximumFractionDigits:1})+' km totales';
+  $('kpiOk').textContent=ok.toLocaleString('es-MX');
+  $('kpiOkSub').textContent=pct.toFixed(1)+'% cumplimiento';
+  $('kpiOkKm').textContent=sumAhorro.toLocaleString('es-MX',{maximumFractionDigits:1})+' km ahorrados';
+  $('kpiFuera').textContent=fuera.toLocaleString('es-MX');
+  $('kpiFueraSub').textContent=(100-pct).toFixed(1)+'% incumplen';
+  $('kpiFueraKm').textContent=sumExceso.toLocaleString('es-MX',{maximumFractionDigits:1})+' km excedentes';
+  $('kpiProm').textContent=fmt(prom);
+  $('kpiPromSub').textContent='km promedio · meta '+META+' km';
+  $('sidebarStat').style.display='block';
+  $('sbPct').textContent=pct.toFixed(1)+'%';
+  $('sbPctSub').textContent=ok+' de '+total+' ops.';
+  let bar=$('sbBar');
+  bar.style.width=pct+'%';
+  bar.style.background=pct>=80?'#84cc16':pct>=60?'#fbbf24':'#f87171';
+}
+
+// ── CHART RANGOS POR SEMANA (apilado) ────────────────
+function drawRangos(filas){
+  // Agrupar por semana
+  let semMap=new Map();
+  filas.forEach(r=>{
+    if(!semMap.has(r.semana)) semMap.set(r.semana,{r0:0,r1:0,r2:0,s:0,n:0,names:new Set()});
+    let g=semMap.get(r.semana);
+    // contar por operador único dentro de cada semana
+    if(!g.names.has(r.nombre.toLowerCase())){
+      g.names.add(r.nombre.toLowerCase());
+      if(r.dist<=META) g.r0++; else if(r.dist<=10) g.r1++; else g.r2++;
+    }
+    g.s+=r.dist; g.n++;
+  });
+  let sems=[...semMap.entries()]
+    .filter(([k])=>k&&k!=='–')
+    .sort((a,b)=>a[0].localeCompare(b[0],undefined,{numeric:true}));
+  let labels=sems.map(s=>s[0]);
+  let d0=sems.map(s=>s[1].r0);
+  let d1=sems.map(s=>s[1].r1);
+  let d2=sems.map(s=>s[1].r2);
+  let proms=sems.map(s=>s[1].n?s[1].s/s[1].n:0);
+
+  const labelPlugin={
+    id:'semLabel',
+    afterDatasetsDraw(chart){
+      let {ctx,scales:{x,y}}=chart;
+      ctx.save();
+      ctx.font='bold 11px Inter,sans-serif';
+      ctx.fillStyle='#1f2937';
+      ctx.textAlign='center';
+      sems.forEach((_,i)=>{
+        let total=d0[i]+d1[i]+d2[i];
+        let topY=y.getPixelForValue(total);
+        ctx.fillText(fmt(proms[i],1)+' km',x.getPixelForValue(i),topY-7);
+      });
+      ctx.restore();
+    }
+  };
+
+  let ctx=$('chartRangos').getContext('2d');
+  if(chRangos) chRangos.destroy();
+  chRangos=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels,
+      datasets:[
+        {label:'0–'+META+' km', data:d0,backgroundColor:'#84cc16',stack:'s',borderRadius:{topLeft:0,topRight:0,bottomLeft:4,bottomRight:4}},
+        {label:META+'–10 km',   data:d1,backgroundColor:'#fbbf24',stack:'s',borderRadius:0},
+        {label:'>10 km',        data:d2,backgroundColor:'#f87171',stack:'s',borderRadius:{topLeft:4,topRight:4,bottomLeft:0,bottomRight:0}},
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{mode:'index',intersect:false,callbacks:{
+          title:i=>'Semana '+i[0].label,
+          label:c=>`${c.dataset.label}: ${c.raw} ops`,
+          footer:i=>`Promedio: ${fmt(proms[i[0].dataIndex],1)} km`
+        }}
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{font:{size:11}}},
+        y:{stacked:true,beginAtZero:true,grid:{color:'#f0f2f7'},ticks:{font:{size:11}}}
+      }
+    },
+    plugins:[labelPlugin]
+  });
+}
+
+// ── CHART GERENTE ─────────────────────────────────────
+function drawGerente(ops){
+  let m=new Map();
+  ops.forEach(r=>{
+    if(!m.has(r.gerente)) m.set(r.gerente,{ok:0,tot:0});
+    let g=m.get(r.gerente); g.tot++;
+    if(r.dist<=META) g.ok++;
+  });
+  let gers=[...m.entries()].sort((a,b)=>b[1].ok/b[1].tot-a[1].ok/a[1].tot);
+  let pcts=gers.map(g=>g[1].tot?g[1].ok/g[1].tot*100:0);
+  let ctx=$('chartGerente').getContext('2d');
+  if(chGerente) chGerente.destroy();
+  chGerente=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:gers.map(g=>g[0]),
+      datasets:[{data:pcts,backgroundColor:pcts.map(p=>p>=80?'#84cc16':p>=60?'#fbbf24':'#f87171'),borderRadius:6}]
+    },
+    options:{
+      indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>`${c.raw.toFixed(1)}% en meta`}}},
+      scales:{
+        x:{min:0,max:100,grid:{color:'#f0f2f7'},ticks:{callback:v=>v+'%',font:{size:11}}},
+        y:{grid:{display:false},ticks:{font:{size:11}}}
+      }
+    }
+  });
+}
+
+// ── CHART PLANTA apilado ──────────────────────────────
+function drawPlanta(ops){
+  let m=new Map();
+  ops.forEach(r=>{
+    if(!m.has(r.planta)) m.set(r.planta,{r0:0,r1:0,r2:0,s:0,n:0});
+    let p=m.get(r.planta);
+    if(r.dist<=META) p.r0++; else if(r.dist<=10) p.r1++; else p.r2++;
+    p.s+=r.dist; p.n++;
+  });
+  let plas=[...m.entries()].map(([name,v])=>({name,r0:v.r0,r1:v.r1,r2:v.r2,prom:v.n?v.s/v.n:0}))
+    .sort((a,b)=>(b.r0+b.r1+b.r2)-(a.r0+a.r1+a.r2));
+
+  const labelPlugin={
+    id:'plaLabel',
+    afterDatasetsDraw(chart){
+      let {ctx,scales:{x,y}}=chart;
+      ctx.save();
+      ctx.font='bold 11px Inter,sans-serif';
+      ctx.fillStyle='#1f2937';
+      ctx.textAlign='center';
+      plas.forEach((p,i)=>{
+        let total=p.r0+p.r1+p.r2;
+        let topY=y.getPixelForValue(total);
+        ctx.fillText(fmt(p.prom,1)+' km',x.getPixelForValue(i),topY-7);
+      });
+      ctx.restore();
+    }
+  };
+
+  let ctx=$('chartPlanta').getContext('2d');
+  if(chPlanta) chPlanta.destroy();
+  chPlanta=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:plas.map(p=>p.name),
+      datasets:[
+        {label:'0–'+META+' km', data:plas.map(p=>p.r0),backgroundColor:'#84cc16',stack:'s',borderRadius:{topLeft:0,topRight:0,bottomLeft:4,bottomRight:4}},
+        {label:META+'–10 km',   data:plas.map(p=>p.r1),backgroundColor:'#fbbf24',stack:'s',borderRadius:0},
+        {label:'>10 km',        data:plas.map(p=>p.r2),backgroundColor:'#f87171',stack:'s',borderRadius:{topLeft:4,topRight:4,bottomLeft:0,bottomRight:0}},
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{mode:'index',intersect:false,callbacks:{
+          title:i=>i[0].label,
+          label:c=>`${c.dataset.label}: ${c.raw} ops`,
+          footer:i=>`Promedio: ${fmt(plas[i[0].dataIndex].prom,1)} km`
+        }}
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{font:{size:11}}},
+        y:{stacked:true,beginAtZero:true,grid:{color:'#f0f2f7'},ticks:{font:{size:11}}}
+      }
+    },
+    plugins:[labelPlugin]
+  });
+}
+
+// ── CHART TENDENCIA con regresión lineal ──────────────
+function linReg(pts){
+  let n=pts.length;
+  if(n<2) return pts.map((_,i)=>pts[0]||0);
+  let sx=0,sy=0,sxy=0,sxx=0;
+  pts.forEach((y,x)=>{sx+=x;sy+=y;sxy+=x*y;sxx+=x*x;});
+  let m=(n*sxy-sx*sy)/(n*sxx-sx*sx);
+  let b=(sy-m*sx)/n;
+  return pts.map((_,x)=>m*x+b);
+}
+
+function drawTendencia(filas){
+  let m=new Map();
+  filas.forEach(r=>{
+    if(!m.has(r.semana)) m.set(r.semana,{s:0,n:0});
+    let g=m.get(r.semana); g.s+=r.dist; g.n++;
+  });
+  let sems=[...m.entries()]
+    .filter(([k])=>k&&k!=='–')
+    .sort((a,b)=>a[0].localeCompare(b[0],undefined,{numeric:true}));
+  let labels=sems.map(s=>s[0]);
+  let proms=sems.map(s=>s[1].n?s[1].s/s[1].n:0);
+  let trend=linReg(proms);
+
+  let ctx=$('chartTendencia').getContext('2d');
+  if(chTend) chTend.destroy();
+  chTend=new Chart(ctx,{
+    type:'line',
+    data:{
+      labels,
+      datasets:[
+        {
+          label:'km promedio',
+          data:proms,
+          borderColor:'#84cc16',
+          backgroundColor:'rgba(132,204,22,.1)',
+          fill:true,tension:0.35,
+          pointRadius:5,pointBackgroundColor:'#84cc16',
+          borderWidth:2,
+          order:1
+        },
+        {
+          label:'Tendencia',
+          data:trend,
+          borderColor:'#f97316',
+          borderDash:[6,4],
+          borderWidth:2,
+          pointRadius:0,
+          fill:false,
+          tension:0,
+          order:2
+        }
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          mode:'index',intersect:false,
+          callbacks:{
+            label:c=>c.datasetIndex===0
+              ?`Promedio: ${fmt(c.raw,2)} km`
+              :`Tendencia: ${fmt(c.raw,2)} km`
+          }
+        }
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{font:{size:11}}},
+        y:{
+          beginAtZero:false,
+          grid:{color:'#f0f2f7'},
+          title:{display:true,text:'km promedio',font:{size:10}},
+          ticks:{font:{size:11},callback:v=>v+' km'}
+        }
+      }
+    }
+  });
+}
+
+// ── TOP 20 ───────────────────────────────────────────
+function drawTop20(ops){
+  let sorted=[...ops].sort((a,b)=>sortDirTop*(b.dist-a.dist));
+  if(sortColTop!=='dist'){
+    sorted=[...ops].sort((a,b)=>sortDirTop*String(a[sortColTop]||'').localeCompare(String(b[sortColTop]||'')));
+  }
+  let top=sorted.slice(0,20);
+  $('cntTop').textContent='Top '+top.length;
+  let max=top[0]?.dist||1;
+  let tbody=$('top20Body');
+  if(!top.length){ tbody.innerHTML='<tr><td colspan="9" style="text-align:center;padding:20px;color:#6b7a99">Sin datos</td></tr>'; return; }
+  tbody.innerHTML=top.map((r,i)=>{
+    let cls=r.dist<=META?'green':r.dist<=10?'amber':'red';
+    let badge=i===0?'gold':i===1?'silver':i===2?'bronze':'rest';
+    let bPct=Math.min(r.dist/max*100,100);
+    let bCol=r.dist<=META?'#84cc16':r.dist<=10?'#fbbf24':'#f87171';
+    return `<tr>
+      <td><span class="rank-badge ${badge}">${i+1}</span></td>
+      <td>${r.nombre}</td><td>${r.planta}</td><td>${r.gerente}</td><td>${r.unidad}</td><td>${r.ruta}</td>
+      <td class="r"><strong>${fmt(r.dist)}</strong></td>
+      <td style="min-width:80px"><div class="dist-bar-wrap"><div class="dist-bar-bg"><div class="dist-bar-fill" style="width:${bPct}%;background:${bCol}"></div></div></div></td>
+      <td class="r"><span class="pill ${cls}">${r.dist<=META?'OK':r.dist<=10?'Atención':'Crítico'}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── TABLA COMPLETA ───────────────────────────────────
+function drawAll(ops){
+  let sorted=[...ops];
+  if(sortColAll==='dist') sorted.sort((a,b)=>sortDirAll*(b.dist-a.dist));
+  else sorted.sort((a,b)=>sortDirAll*String(a[sortColAll]||'').localeCompare(String(b[sortColAll]||'')));
+  $('cntAll').textContent=sorted.length+' operadores';
+  let tbody=$('allBody');
+  if(!sorted.length){ tbody.innerHTML='<tr><td colspan="7" style="text-align:center;padding:20px;color:#6b7a99">Sin datos</td></tr>'; return; }
+  tbody.innerHTML=sorted.map(r=>{
+    let cls=r.dist<=META?'green':r.dist<=10?'amber':'red';
+    return `<tr>
+      <td>${r.nombre}</td><td>${r.planta}</td><td>${r.gerente}</td><td>${r.unidad}</td><td>${r.ruta}</td>
+      <td class="r">${fmt(r.dist)}</td>
+      <td class="r"><span class="pill ${cls}">${r.dist<=META?'OK':r.dist<=10?'Atención':'Crítico'}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+function sortTop(col){ if(sortColTop===col)sortDirTop*=-1; else{sortColTop=col;sortDirTop=col==='dist'?-1:1;} drawTop20(filteredOps(OPERADORES)); }
+function sortAll(col){  if(sortColAll===col)sortDirAll*=-1;  else{sortColAll=col;sortDirAll=col==='dist'?-1:1;}  drawAll(filteredOps(OPERADORES));  }
+
+// ── INIT ─────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded',async()=>{
+  $('fechaBadge').innerHTML='📅 '+new Date().toLocaleDateString('es-MX');
+  let ov=$('loadingOverlay');
+  try{
+    let url=`https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:csv&sheet=VA`;
+    let res=await fetch(url);
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    let txt=await res.text();
+    parseCSV(txt);
+    if(!ROWS.length) throw new Error('No se encontraron registros');
+    poblarSelects();
+    aplicarFiltros();
+    ov.classList.add('hidden');
+  }catch(e){
+    ov.classList.add('hidden');
+    $('errMsg').textContent=e.message;
+    $('errBanner').classList.remove('hidden');
+    console.error(e);
+  }
+});
+
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.dd-nav')) document.getElementById('ddNav').classList.remove('open');
+});
+</script>
+</body>
+</html>

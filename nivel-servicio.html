@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nivel de Servicio — Settepi Saltillo</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --bg:        #070c12;
+  --bg2:       #0b141f;
+  --bg3:       #0f1a2a;
+  --border:    #1a2c40;
+  --green:     #3aa0ff;
+  --green2:    #1f6feb;
+  --green-dim: #1a3350;
+  --text:      #e6eef8;
+  --text2:     #8aa4c4;
+  --text3:     #4a6a8a;
+  --amber:     #f5a623;
+  --red:       #e05555;
+  --gold:      #ffd166;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'DM Sans', sans-serif;
+  font-size: 14px;
+  min-height: 100vh;
+}
+
+/* ── Header ── */
+.header {
+  background: linear-gradient(135deg, #0b2415 0%, #0f3320 50%, #081a0f 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 64px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.header-left { display: flex; align-items: center; gap: 16px; }
+.logo-mark {
+  width: 38px; height: 38px;
+  background: var(--green);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'DM Serif Display', serif;
+  font-size: 18px; color: #070c12; font-weight: bold;
+}
+.header-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.2rem;
+  color: var(--text);
+  letter-spacing: 0.3px;
+}
+.header-sub { font-size: 0.7rem; color: var(--text3); margin-top: 1px; }
+.header-right { display: flex; align-items: center; gap: 20px; }
+.fb-status-wrap { display: flex; flex-direction: column; gap: 2px; align-items: flex-end; }
+.fb-line { font-family: 'DM Mono', monospace; font-size: 0.65rem; color: var(--text3); }
+
+
+/* Portal back-link */
+.portal-back{display:flex;align-items:center;gap:6px;color:var(--text3);text-decoration:none;font-size:0.78rem;font-weight:600;padding:6px 12px;border:1px solid var(--border);border-radius:8px;transition:all 0.15s}
+.portal-back:hover{border-color:var(--green2);color:var(--green)}
+
+/* View toggle */
+.view-toggle{display:flex;background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:3px;gap:3px}
+.vtab{background:none;border:none;color:var(--text3);padding:6px 18px;border-radius:6px;font-size:0.8rem;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.15s}
+.vtab.active{background:var(--green-dim);color:var(--green)}
+.vtab:hover:not(.active){color:var(--text2)}
+
+/* ── Filters ── */
+.filters-bar {
+  background: var(--bg2);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 32px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+.filter-group { display: flex; flex-direction: column; gap: 3px; }
+.filter-group label { font-size: 0.62rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; }
+.filter-group select, .filter-group input {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 0.78rem;
+  font-family: 'DM Sans', sans-serif;
+  outline: none;
+  cursor: pointer;
+  min-width: 130px;
+}
+.filter-group select:focus { border-color: var(--green2); }
+.btn-reset {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text3);
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  margin-top: 14px;
+  transition: all 0.15s;
+}
+.btn-reset:hover { border-color: var(--green2); color: var(--green); }
+.filter-info-bar {
+  background: var(--bg);
+  border-bottom: 1px solid var(--border);
+  padding: 7px 32px;
+  font-size: 0.7rem;
+  color: var(--text3);
+  font-family: 'DM Mono', monospace;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* ── Main layout ── */
+.main { padding: 24px 32px 48px; max-width: 1400px; margin: 0 auto; }
+
+/* ── Global NS card ── */
+.ns-hero {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 24px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 28px 32px;
+  margin-bottom: 24px;
+  align-items: center;
+}
+.ns-dial-wrap { position: relative; width: 140px; height: 140px; }
+.ns-dial-wrap canvas { position: absolute; inset: 0; }
+.ns-dial-label {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+}
+.ns-dial-pct {
+  font-family: 'DM Serif Display', serif;
+  font-size: 2rem;
+  line-height: 1;
+  color: var(--text);
+}
+.ns-dial-sub { font-size: 0.6rem; color: var(--text3); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+.ns-hero-stats { display: flex; flex-direction: column; gap: 14px; }
+.ns-hero-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.4rem;
+  color: var(--text);
+}
+.ns-hero-title span { color: var(--green); }
+.kpi-row { display: flex; gap: 16px; flex-wrap: wrap; }
+.kpi {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 20px;
+  min-width: 130px;
+}
+.kpi .kv { font-family: 'DM Serif Display', serif; font-size: 1.6rem; line-height: 1; }
+.kpi .kl { font-size: 0.62rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+.kpi.good .kv { color: var(--green); }
+.kpi.warn .kv { color: var(--amber); }
+.kpi.bad  .kv { color: var(--red); }
+.kpi.neutral .kv { color: var(--text); }
+
+/* ── Section headers ── */
+.section-hdr {
+  display: flex; align-items: baseline; gap: 10px;
+  margin-bottom: 16px; margin-top: 32px;
+}
+.section-hdr h2 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.1rem; color: var(--text);
+}
+.section-hdr .sh-sub { font-size: 0.7rem; color: var(--text3); }
+
+/* ── Grid cards por cliente ── */
+.clients-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+}
+.client-card {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 18px 20px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+.client-card::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  border-radius: 3px 0 0 3px;
+}
+.client-card.ns-high::before  { background: var(--green); }
+.client-card.ns-mid::before   { background: var(--amber); }
+.client-card.ns-low::before   { background: var(--red); }
+.client-card:hover { border-color: var(--green2); background: var(--bg3); }
+.cc-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 12px; }
+.cc-name { font-size: 0.8rem; font-weight: 700; color: var(--text); max-width: 180px; }
+.cc-pct {
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.8rem; line-height: 1;
+}
+.ns-high .cc-pct { color: var(--green); }
+.ns-mid  .cc-pct { color: var(--amber); }
+.ns-low  .cc-pct { color: var(--red); }
+.cc-bar-track {
+  height: 6px; background: var(--bg3);
+  border-radius: 3px; overflow: hidden; margin-bottom: 8px;
+}
+.cc-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s; }
+.ns-high .cc-bar-fill { background: var(--green); }
+.ns-mid  .cc-bar-fill { background: var(--amber); }
+.ns-low  .cc-bar-fill { background: var(--red); }
+.cc-stats { display: flex; gap: 16px; font-size: 0.67rem; color: var(--text3); }
+.cc-stats span { display: flex; flex-direction: column; gap: 1px; }
+.cc-stats b { font-size: 0.82rem; color: var(--text); font-weight: 600; }
+
+/* ── Trend chart section ── */
+.trend-wrap {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 24px;
+  margin-top: 32px;
+}
+.trend-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; }
+.trend-hdr h2 { font-family: 'DM Serif Display', serif; font-size: 1.1rem; }
+.trend-tabs { display: flex; gap: 6px; }
+.ttab {
+  background: var(--bg3); border: 1px solid var(--border);
+  color: var(--text3); border-radius: 6px;
+  padding: 5px 12px; font-size: 0.72rem;
+  cursor: pointer; transition: all 0.15s;
+}
+.ttab.active { background: var(--green-dim); border-color: var(--green2); color: var(--green); }
+.chart-box { height: 300px; position: relative; }
+
+/* ── Ranking table ── */
+.rank-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.78rem;
+}
+.rank-table th {
+  text-align: left;
+  padding: 8px 12px;
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text3);
+  border-bottom: 1px solid var(--border);
+  font-weight: 600;
+}
+.rank-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--bg3);
+  color: var(--text);
+}
+.rank-table tr:hover td { background: var(--bg3); }
+.rank-table .ns-chip {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-family: 'DM Mono', monospace;
+}
+.chip-high { background: rgba(58,160,255,0.15); color: var(--green); }
+.chip-mid  { background: rgba(245,166,35,0.15); color: var(--amber); }
+.chip-low  { background: rgba(224,85,85,0.15); color: var(--red); }
+.mini-bar { display: flex; align-items: center; gap: 8px; }
+.mini-track { flex: 1; height: 5px; background: var(--bg3); border-radius: 3px; overflow: hidden; min-width: 60px; }
+.mini-fill { height: 100%; border-radius: 3px; }
+
+/* ── Modal ── */
+.modal-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.8);
+  z-index: 500;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.modal-box {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  width: 100%; max-width: 820px;
+  max-height: 88vh; overflow-y: auto;
+  padding: 28px;
+  position: relative;
+}
+.modal-close {
+  position: absolute; top: 16px; right: 18px;
+  background: none; border: none; color: var(--text3);
+  font-size: 1.3rem; cursor: pointer; line-height: 1;
+}
+.modal-close:hover { color: var(--text); }
+.modal-title { font-family: 'DM Serif Display', serif; font-size: 1.3rem; margin-bottom: 4px; }
+.modal-sub { font-size: 0.72rem; color: var(--text3); margin-bottom: 20px; }
+.modal-kpis { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 20px; }
+.modal-kpi {
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 8px; padding: 10px 16px; flex: 1; min-width: 100px; text-align: center;
+}
+.modal-kpi .mv { font-family: 'DM Serif Display', serif; font-size: 1.4rem; }
+.modal-kpi .ml { font-size: 0.6rem; color: var(--text3); text-transform: uppercase; letter-spacing: 0.4px; margin-top: 3px; }
+.modal-chart-box { height: 260px; position: relative; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 16px; margin-bottom: 16px; }
+
+/* ── Tabla detalle viajes con retraso ── */
+.late-table-wrap { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+.late-table-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.late-table-hdr h3 { font-family: 'DM Serif Display', serif; font-size: 0.95rem; color: var(--text); font-weight: normal; }
+.late-count { font-size: 0.66rem; color: var(--text3); font-family: 'DM Mono', monospace; }
+.late-table-scroll { max-height: 280px; overflow-y: auto; }
+.late-table-scroll table.rank-table { font-size: 0.74rem; }
+.late-table-scroll thead th { position: sticky; top: 0; background: var(--bg); }
+.badge-late   { color: var(--red);   font-weight: 700; font-family: 'DM Mono', monospace; }
+.badge-ontime { color: var(--green); font-weight: 700; font-family: 'DM Mono', monospace; }
+.badge-nodata { color: var(--text3); font-family: 'DM Mono', monospace; }
+
+/* ── Responsive ── */
+@media(max-width:700px){
+  .main { padding: 16px; }
+  .ns-hero { grid-template-columns: 1fr; }
+  .header { padding: 0 16px; }
+  .filters-bar { padding: 10px 16px; }
+}
+</style>
+</head>
+<body>
+
+<!-- Firebase module -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, getDocs }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCbKMq86sN36Zoc0NwpNBp6vcI7Ra6ELR4",
+  authDomain: "portal-settepi.firebaseapp.com",
+  projectId: "portal-settepi",
+  storageBucket: "portal-settepi.firebasestorage.app",
+  messagingSenderId: "113217519566",
+  appId: "1:113217519566:web:bed501747d724da61f759f"
+};
+
+const app = initializeApp(firebaseConfig);
+const db  = getFirestore(app);
+
+function setFB(msg, color='#3aa0ff'){
+  const el = document.getElementById('fbLine');
+  if(el){ el.textContent = msg; el.style.color = color; }
+}
+
+async function loadViajes(){
+  setFB('☁️ Cargando viajes…', '#f5a623');
+  try {
+    const snap = await getDocs(collection(db, 'viajes'));
+    const rows = [];
+    snap.forEach(d => rows.push(d.data()));
+    if(rows.length){
+      setFB(`✅ ${rows.length} viajes cargados`, '#3aa0ff');
+      if(window.__nsSetData) window.__nsSetData(rows);
+      else window.__nsPendingData = rows;
+    } else {
+      setFB('⚠️ Sin datos en Firestore', '#f5a623');
+    }
+  } catch(e){
+    setFB('⚠️ ' + e.message, '#e05555');
+    console.error(e);
+  }
+}
+
+loadViajes();
+</script>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-left">
+    <div class="logo-mark">S</div>
+    <div>
+      <div class="header-title" id="headerTitle">Nivel de Servicio</div>
+      <div class="header-sub" id="headerSub">Settepi Saltillo · Tolerancia llegada: 5 min</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <a href="index.html" class="portal-back" title="Volver al portal">← Portal</a>
+    <div class="view-toggle">
+      <button class="vtab active" id="mtabServicio" onclick="setMetric('servicio')">🏁 Nivel de Servicio</button>
+      <button class="vtab" id="mtabInicios" onclick="setMetric('inicios')">🚦 Nivel de Inicios</button>
+    </div>
+    <div class="view-toggle">
+      <button class="vtab active" id="vtabGlobal" onclick="setView('global')">🌐 Global</button>
+      <button class="vtab" id="vtabStellantis" onclick="setView('stellantis')">🚗 Stellantis</button>
+    </div>
+    <div class="fb-status-wrap">
+      <span id="fbLine" class="fb-line">☁️ Conectando…</span>
+    </div>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="filters-bar">
+  <div class="filter-group">
+    <label>Fecha</label>
+    <select id="fDate" onchange="applyFilters()"><option value="">Todas</option></select>
+  </div>
+  <div class="filter-group">
+    <label>Semana</label>
+    <select id="fWeek" onchange="applyFilters()"><option value="">Todas</option></select>
+  </div>
+  <div class="filter-group">
+    <label>Mes</label>
+    <select id="fMonth" onchange="applyFilters()"><option value="">Todos</option></select>
+  </div>
+  <div class="filter-group">
+    <label>Cliente / Grupo</label>
+    <select id="fGroup" onchange="applyFilters()"><option value="">Todos</option></select>
+  </div>
+  <div class="filter-group">
+    <label>Estado de datos</label>
+    <select id="fStatus" onchange="applyFilters()">
+      <option value="">Todos</option>
+      <option value="reliable">Solo confiables (done)</option>
+    </select>
+  </div>
+  <button class="btn-reset" onclick="resetFilters()">↺ Limpiar filtros</button>
+</div>
+<div class="filter-info-bar">
+  <span id="filterInfo">Cargando datos…</span>
+</div>
+
+<!-- Main -->
+<div class="main">
+
+  <!-- Hero NS global -->
+  <div class="ns-hero">
+    <div class="ns-dial-wrap">
+      <canvas id="dialChart" width="140" height="140"></canvas>
+      <div class="ns-dial-label">
+        <div class="ns-dial-pct" id="dialPct">—</div>
+        <div class="ns-dial-sub" id="dialSubLabel">NS global</div>
+      </div>
+    </div>
+    <div class="ns-hero-stats">
+      <div class="ns-hero-title"><span id="heroTitleLabel">Nivel de Servicio</span> <span id="heroRange">—</span></div>
+      <div class="kpi-row" id="heroKpis"></div>
+    </div>
+  </div>
+
+  <!-- Clientes grid -->
+  <div class="section-hdr">
+    <h2>Por Cliente</h2>
+    <span class="sh-sub" id="clientCount"></span>
+  </div>
+  <div class="clients-grid" id="clientsGrid"></div>
+
+  <!-- Tendencia -->
+  <div class="trend-wrap">
+    <div class="trend-hdr">
+      <h2 id="trendTitle">Tendencia de Nivel de Servicio</h2>
+      <div class="trend-tabs">
+        <button class="ttab active" onclick="setTrendMode('global',this)">Global</button>
+        <button class="ttab" onclick="setTrendMode('byGroup',this)">Por cliente</button>
+      </div>
+    </div>
+    <div class="chart-box">
+      <canvas id="trendChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Ranking tabla -->
+  <div class="section-hdr" style="margin-top:32px">
+    <h2>Ranking de Clientes</h2>
+    <span class="sh-sub" id="rankSub">Ordenado por nivel de servicio</span>
+  </div>
+  <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;overflow:hidden">
+    <table class="rank-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Cliente</th>
+          <th id="rankColNS">Nivel de Servicio</th>
+          <th>A tiempo</th>
+          <th>Total</th>
+          <th>Tarde</th>
+          <th>Sin dato</th>
+        </tr>
+      </thead>
+      <tbody id="rankBody"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- Modal detalle cliente -->
+<div id="modalOverlay" class="modal-overlay" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title" id="modalTitle"></div>
+    <div class="modal-sub" id="modalSub"></div>
+    <div class="modal-kpis" id="modalKpis"></div>
+    <div class="modal-chart-box">
+      <canvas id="modalChart"></canvas>
+    </div>
+    <div class="late-table-wrap">
+      <div class="late-table-hdr">
+        <h3 id="lateTableTitle">Detalle de viajes con retraso</h3>
+        <span class="late-count" id="lateCount"></span>
+      </div>
+      <div class="late-table-scroll">
+        <table class="rank-table" id="lateTable">
+          <thead>
+            <tr>
+              <th>Fecha</th>
+              <th>Operador</th>
+              <th>Ruta</th>
+              <th id="lateTableHdrSecondary">Inició tarde</th>
+              <th id="lateTableHdrPrimary">Retraso llegada</th>
+            </tr>
+          </thead>
+          <tbody id="lateTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── State ────────────────────────────────────────────────────────────────────
+let allData = [];
+let trendMode = 'global';
+let viewMode  = 'global';
+let metricMode = 'servicio'; // 'servicio' = llegada (end_*) | 'inicios' = salida (start_*)
+const STELLANTIS_GROUPS = ['CAMIONES', 'EXTENSION', 'MOTORES SUR', 'MOTORES NORTE', 'VAN'];
+
+// Devuelve los nombres de campo y etiquetas según el modo de métrica activo
+function metricFields(){
+  return metricMode === 'inicios'
+    ? { status:'start_status', delay:'start_delay', label:'Nivel de Inicios', shortLabel:'NI', tolLabel:'Tolerancia inicio: 5 min' }
+    : { status:'end_status',   delay:'end_delay',   label:'Nivel de Servicio', shortLabel:'NS', tolLabel:'Tolerancia llegada: 5 min' };
+}
+
+function setMetric(mode){
+  metricMode = mode;
+  document.getElementById('mtabServicio').classList.toggle('active', mode==='servicio');
+  document.getElementById('mtabInicios').classList.toggle('active', mode==='inicios');
+  const {label, shortLabel, tolLabel} = metricFields();
+  document.getElementById('headerTitle').textContent = label;
+  document.getElementById('headerSub').textContent = `Settepi Saltillo · ${tolLabel}`;
+  document.getElementById('dialSubLabel').textContent = `${shortLabel} global`;
+  document.getElementById('heroTitleLabel').textContent = label;
+  document.getElementById('trendTitle').textContent = `Tendencia de ${label}`;
+  document.getElementById('rankSub').textContent = `Ordenado por ${label.toLowerCase()}`;
+  document.getElementById('rankColNS').textContent = label;
+  document.title = `${label} — Settepi Saltillo`;
+  applyFilters();
+}
+
+function setView(mode){
+  viewMode = mode;
+  document.getElementById('vtabGlobal').classList.toggle('active', mode==='global');
+  document.getElementById('vtabStellantis').classList.toggle('active', mode==='stellantis');
+  // In stellantis mode hide group filter (fixed set of groups)
+  const gWrap = document.getElementById('fGroup').closest('.filter-group');
+  if(gWrap) gWrap.style.display = mode==='stellantis' ? 'none' : '';
+  populateFilters();
+  applyFilters();
+}
+let dialChart = null, trendChart = null, modalChart = null;
+
+const MONTH_NAMES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                     'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+
+// ── Firebase bridge ───────────────────────────────────────────────────────────
+window.__nsSetData = function(rows) {
+  allData = rows;
+  populateFilters();
+  applyFilters();
+};
+(function init(){
+  if(window.__nsPendingData && window.__nsPendingData.length){
+    allData = window.__nsPendingData;
+    window.__nsPendingData = null;
+    populateFilters();
+    applyFilters();
+  }
+})();
+
+// ── Date helpers ──────────────────────────────────────────────────────────────
+function getISOWeek(dateStr){
+  const d = new Date(dateStr + 'T12:00:00');
+  const tmp = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  tmp.setUTCDate(tmp.getUTCDate() + 4 - (tmp.getUTCDay()||7));
+  const y = tmp.getUTCFullYear();
+  const w = Math.ceil(((tmp - new Date(Date.UTC(y,0,1)))/86400000 + 1)/7);
+  return `${y}-S${String(w).padStart(2,'0')}`;
+}
+function getMonthKey(dateStr){ const [y,m] = dateStr.split('-'); return `${y}-${m}`; }
+function fmtDate(iso){ const [y,m,d]=iso.split('-'); return `${d}/${m}/${y}`; }
+function dateRangeLabel(dates){
+  if(!dates.length) return '—';
+  const s=dates[0], e=dates[dates.length-1];
+  return s===e ? fmtDate(s) : `${fmtDate(s)} al ${fmtDate(e)}`;
+}
+
+// ── NS/NI calculation ─────────────────────────────────────────────────────────
+// On time = <status> === 'done' AND <delay> <= 5   (campos según metricMode)
+// No reliable data = <status> !== 'done' → excluded from calc
+function calcNS(rows){
+  const {status:sf, delay:df} = metricFields();
+  const reliable = rows.filter(r => r[sf] === 'done');
+  const onTime   = reliable.filter(r => r[df] !== null && r[df] <= 5);
+  const late     = reliable.filter(r => r[df] !== null && r[df] > 5);
+  const noData   = rows.filter(r => r[sf] !== 'done');
+  const ns = reliable.length ? Math.round(onTime.length / reliable.length * 1000)/10 : null;
+  return { total: rows.length, reliable: reliable.length, onTime: onTime.length, late: late.length, noData: noData.length, ns };
+}
+
+function nsClass(ns){ if(ns===null) return 'ns-mid'; if(ns>=95) return 'ns-high'; if(ns>=85) return 'ns-mid'; return 'ns-low'; }
+function chipClass(ns){ if(ns===null) return 'chip-mid'; if(ns>=95) return 'chip-high'; if(ns>=85) return 'chip-mid'; return 'chip-low'; }
+
+// ── Filters ───────────────────────────────────────────────────────────────────
+function populateFilters(){
+  const src    = viewMode==='stellantis' ? allData.filter(r=>STELLANTIS_GROUPS.includes((r.group||'').toUpperCase())) : allData;
+  const dates  = [...new Set(src.map(r=>r.date))].sort();
+  const weeks  = [...new Set(src.map(r=>getISOWeek(r.date)))].sort();
+  const months = [...new Set(src.map(r=>getMonthKey(r.date)))].sort();
+  const groups = [...new Set(src.map(r=>r.group).filter(Boolean))].sort();
+
+  const dSel = document.getElementById('fDate');
+  const wSel = document.getElementById('fWeek');
+  const mSel = document.getElementById('fMonth');
+  const gSel = document.getElementById('fGroup');
+  const dVal=dSel.value, wVal=wSel.value, mVal=mSel.value, gVal=gSel.value;
+
+  dSel.innerHTML='<option value="">Todas</option>'+dates.map(d=>`<option ${d===dVal?'selected':''}>${fmtDate(d)}</option>`).join('');
+  wSel.innerHTML='<option value="">Todas</option>'+weeks.map(w=>`<option ${w===wVal?'selected':''}>${w}</option>`).join('');
+  mSel.innerHTML='<option value="">Todos</option>'+months.map(m=>{
+    const [y,mo]=m.split('-');
+    return `<option value="${m}" ${m===mVal?'selected':''}>${MONTH_NAMES[parseInt(mo)-1]} ${y}</option>`;
+  }).join('');
+  gSel.innerHTML='<option value="">Todos</option>'+groups.map(g=>`<option ${g===gVal?'selected':''}>${g}</option>`).join('');
+}
+
+function getFiltered(){
+  const date   = document.getElementById('fDate').value;
+  const week   = document.getElementById('fWeek').value;
+  const month  = document.getElementById('fMonth').value;
+  const group  = document.getElementById('fGroup').value;
+  const status = document.getElementById('fStatus').value;
+  let data = allData;
+  // Stellantis view: restrict to those 5 groups (case-insensitive)
+  if(viewMode==='stellantis')
+    data = data.filter(r=>STELLANTIS_GROUPS.includes((r.group||'').toUpperCase()));
+  if(date)   data = data.filter(r=>fmtDate(r.date)===date);
+  if(week)   data = data.filter(r=>getISOWeek(r.date)===week);
+  if(month)  data = data.filter(r=>getMonthKey(r.date)===month);
+  if(group && viewMode!=='stellantis') data = data.filter(r=>r.group===group);
+  if(status==='reliable') data = data.filter(r=>r[metricFields().status]==='done');
+  return data;
+}
+
+function resetFilters(){
+  ['fDate','fWeek','fMonth','fGroup','fStatus'].forEach(id=>document.getElementById(id).value='');
+  applyFilters();
+}
+
+// ── Main render ───────────────────────────────────────────────────────────────
+function applyFilters(){
+  const data = getFiltered();
+  updateFilterInfo(data);
+  updateHero(data);
+  updateClientsGrid(data);
+  updateRanking(data);
+  updateTrend(data);
+}
+
+function updateFilterInfo(data){
+  const dates = [...new Set(data.map(r=>r.date))].sort();
+  const group = document.getElementById('fGroup').value;
+  const week  = document.getElementById('fWeek').value;
+  const month = document.getElementById('fMonth').value;
+  let parts = [];
+  if(week)  parts.push(`Semana: ${week}`);
+  if(month) parts.push(`Mes: ${month}`);
+  if(group) parts.push(`Cliente: ${group}`);
+  document.getElementById('filterInfo').innerHTML =
+    `📅 ${dateRangeLabel(dates)} &nbsp;·&nbsp; ${data.length} viajes` +
+    (parts.length ? ` &nbsp;|&nbsp; 🔍 ${parts.join(' · ')}` : '');
+}
+
+// ── Hero dial ─────────────────────────────────────────────────────────────────
+function updateHero(data){
+  const {total, reliable, onTime, late, noData, ns} = calcNS(data);
+  const pct = ns !== null ? ns : 0;
+  const dates = [...new Set(data.map(r=>r.date))].sort();
+
+  document.getElementById('dialPct').textContent = ns!==null ? ns+'%' : '—';
+  const viewLabel = viewMode==='stellantis'
+    ? '<span style="font-size:0.7rem;background:rgba(58,160,255,0.12);color:var(--green);border:1px solid var(--green-dim);border-radius:4px;padding:2px 8px;margin-left:8px">Stellantis</span>'
+    : '';
+  document.getElementById('heroRange').innerHTML = dateRangeLabel(dates) + viewLabel;
+
+  // Dial chart
+  const color = pct>=95?'#3aa0ff':pct>=85?'#f5a623':'#e05555';
+  if(dialChart) dialChart.destroy();
+  const ctx = document.getElementById('dialChart').getContext('2d');
+  dialChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      datasets:[{
+        data:[pct, 100-pct],
+        backgroundColor:[color,'rgba(255,255,255,0.05)'],
+        borderWidth:0,
+        circumference:270, rotation:225
+      }]
+    },
+    options:{ plugins:{legend:{display:false},tooltip:{enabled:false}}, cutout:'78%' }
+  });
+
+  // KPIs
+  document.getElementById('heroKpis').innerHTML = `
+    <div class="kpi neutral"><div class="kv">${total}</div><div class="kl">Total viajes</div></div>
+    <div class="kpi good"><div class="kv">${onTime}</div><div class="kl">A tiempo</div></div>
+    <div class="kpi bad"><div class="kv">${late}</div><div class="kl">Con retraso</div></div>
+    <div class="kpi neutral"><div class="kv">${reliable}</div><div class="kl">Con dato confiable</div></div>
+    <div class="kpi neutral" style="opacity:0.6"><div class="kv">${noData}</div><div class="kl">Sin dato (excluidos)</div></div>
+  `;
+}
+
+// ── Clients grid ──────────────────────────────────────────────────────────────
+function updateClientsGrid(data){
+  const groups = {};
+  data.forEach(r=>{
+    const g = r.group||'Sin grupo';
+    if(!groups[g]) groups[g]=[];
+    groups[g].push(r);
+  });
+
+  const arr = Object.entries(groups).map(([g,rows])=>({g, ...calcNS(rows)}))
+    .sort((a,b)=>(b.ns??-1)-(a.ns??-1));
+
+  document.getElementById('clientCount').textContent = `${arr.length} clientes`;
+
+  document.getElementById('clientsGrid').innerHTML = arr.map(({g,ns,total,onTime,late,noData,reliable})=>{
+    const cls = nsClass(ns);
+    const pct = ns??0;
+    return `<div class="client-card ${cls}" onclick="openModal('${g.replace(/'/g,"\\'")}')">
+      <div class="cc-top">
+        <div class="cc-name">${g}</div>
+        <div class="cc-pct">${ns!==null?ns+'%':'—'}</div>
+      </div>
+      <div class="cc-bar-track"><div class="cc-bar-fill" style="width:${pct}%"></div></div>
+      <div class="cc-stats">
+        <span><b>${onTime}</b>A tiempo</span>
+        <span><b>${late}</b>Con retraso</span>
+        <span><b>${total}</b>Total</span>
+        <span><b>${noData}</b>Sin dato</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Ranking table ─────────────────────────────────────────────────────────────
+function updateRanking(data){
+  const groups = {};
+  data.forEach(r=>{ const g=r.group||'Sin grupo'; if(!groups[g])groups[g]=[]; groups[g].push(r); });
+  const arr = Object.entries(groups).map(([g,rows])=>({g,...calcNS(rows)}))
+    .sort((a,b)=>(b.ns??-1)-(a.ns??-1));
+
+  const maxTotal = Math.max(...arr.map(a=>a.total), 1);
+  document.getElementById('rankBody').innerHTML = arr.map(({g,ns,total,onTime,late,noData},i)=>{
+    const chip = ns!==null?`<span class="ns-chip ${chipClass(ns)}">${ns}%</span>`:`<span class="ns-chip chip-mid">—</span>`;
+    return `<tr onclick="openModal('${g.replace(/'/g,"\\'")}') " style="cursor:pointer">
+      <td style="color:var(--text3);font-family:'DM Mono',monospace">${i+1}</td>
+      <td style="font-weight:600">${g}</td>
+      <td>
+        <div class="mini-bar">
+          ${chip}
+          <div class="mini-track"><div class="mini-fill" style="width:${ns??0}%;background:${ns>=95?'var(--green)':ns>=85?'var(--amber)':'var(--red)'}"></div></div>
+        </div>
+      </td>
+      <td style="color:var(--green)">${onTime}</td>
+      <td>${total}</td>
+      <td style="color:${late>0?'var(--red)':'var(--text3)'}">${late}</td>
+      <td style="color:var(--text3)">${noData}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Trend chart ───────────────────────────────────────────────────────────────
+function setTrendMode(mode, btn){
+  trendMode = mode;
+  document.querySelectorAll('.ttab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  updateTrend(getFiltered());
+}
+
+function updateTrend(data){
+  const dates = [...new Set(data.map(r=>r.date))].sort();
+  if(trendChart){ trendChart.destroy(); trendChart=null; }
+  const ctx = document.getElementById('trendChart').getContext('2d');
+  const {shortLabel} = metricFields();
+
+  if(trendMode==='global'){
+    const nsPerDay = dates.map(d=>{
+      const {ns} = calcNS(data.filter(r=>r.date===d));
+      return ns;
+    });
+    trendChart = new Chart(ctx, {
+      type:'line',
+      data:{
+        labels: dates.map(fmtDate),
+        datasets:[{
+          label:`${shortLabel} Global`,
+          data: nsPerDay,
+          borderColor:'#3aa0ff',
+          backgroundColor:'rgba(58,160,255,0.1)',
+          pointBackgroundColor: nsPerDay.map(v=>v===null?'transparent':v>=95?'#3aa0ff':v>=85?'#f5a623':'#e05555'),
+          pointRadius:6, pointHoverRadius:8,
+          tension:0.3, fill:true, spanGaps:false
+        },{
+          label:'Meta 95%',
+          data: dates.map(()=>95),
+          borderColor:'rgba(58,160,255,0.3)',
+          borderDash:[6,4], borderWidth:1.5,
+          pointRadius:0, tension:0
+        }]
+      },
+      options: chartOptions(`${shortLabel} (%)`)
+    });
+  } else {
+    // By group — top 6 groups by volume
+    const groups = [...new Set(data.map(r=>r.group).filter(Boolean))];
+    const colors = ['#3aa0ff','#f5a623','#e05555','#22d3ee','#ffd166','#c77dff'];
+    const datasets = groups.slice(0,6).map((g,i)=>({
+      label: g,
+      data: dates.map(d=>{ const {ns}=calcNS(data.filter(r=>r.date===d&&r.group===g)); return ns; }),
+      borderColor: colors[i%colors.length],
+      backgroundColor: 'transparent',
+      pointRadius:4, tension:0.3, spanGaps:false
+    }));
+    trendChart = new Chart(ctx, {
+      type:'line',
+      data:{ labels:dates.map(fmtDate), datasets },
+      options: chartOptions(`${shortLabel} (%)`)
+    });
+  }
+}
+
+function chartOptions(yLabel){
+  return {
+    responsive:true, maintainAspectRatio:false,
+    interaction:{mode:'index',intersect:false},
+    plugins:{
+      legend:{ labels:{ color:'#8aa4c4', font:{size:11}, boxWidth:12 } },
+      tooltip:{ backgroundColor:'#0b141f', borderColor:'#1a2c40', borderWidth:1,
+        callbacks:{ label: c=>`${c.dataset.label}: ${c.raw!==null?c.raw+'%':'sin dato'}` } }
+    },
+    scales:{
+      x:{ ticks:{color:'#8aa4c4',font:{size:11}}, grid:{color:'rgba(58,160,255,0.06)'} },
+      y:{ min:0, max:100, ticks:{color:'#8aa4c4',font:{size:10},callback:v=>v+'%'},
+          grid:{color:'rgba(58,160,255,0.06)'},
+          title:{display:true,text:yLabel,color:'#4a6a8a',font:{size:10}} }
+    }
+  };
+}
+
+// ── Detalle de viajes con retraso ───────────────────────────────────────────────
+// Nombres candidatos por campo: si en Firestore el documento usa otro nombre,
+// ajusta estas listas (agrega el nombre real al inicio del arreglo).
+const OPERATOR_KEYS = ['operador','operator','chofer','driver','nombre_operador','operador_nombre'];
+const ROUTE_KEYS    = ['ruta','route','ruta_nombre','route_name','nombre_ruta'];
+
+function pickField(r, keys){
+  for(const k of keys){
+    if(r[k] !== undefined && r[k] !== null && r[k] !== '') return r[k];
+  }
+  return null;
+}
+
+function buildLateTable(data){
+  const {status:pf, delay:pd} = metricFields();
+  const secondary = metricMode === 'inicios'
+    ? { status:'end_status',   delay:'end_delay',   label:'Llegó tarde' }
+    : { status:'start_status', delay:'start_delay', label:'Inició tarde' };
+  const primaryColLabel = metricMode === 'inicios' ? 'Retraso inicio' : 'Retraso llegada';
+  const eventLabel = metricMode === 'inicios' ? 'con inicio tarde' : 'con llegada tarde';
+
+  document.getElementById('lateTableTitle').textContent = `Detalle de viajes ${eventLabel}`;
+  document.getElementById('lateTableHdrSecondary').textContent = secondary.label;
+  document.getElementById('lateTableHdrPrimary').textContent = primaryColLabel;
+
+  const late = data
+    .filter(r => r[pf]==='done' && r[pd]!==null && r[pd]>5)
+    .sort((a,b) => (b[pd]||0) - (a[pd]||0));
+
+  document.getElementById('lateCount').textContent = `${late.length} viaje(s)`;
+
+  document.getElementById('lateTableBody').innerHTML = late.length ? late.map(r=>{
+    const op     = pickField(r, OPERATOR_KEYS) || '—';
+    const ruta   = pickField(r, ROUTE_KEYS) || '—';
+
+    let secBadge = '<span class="badge-nodata">Sin dato</span>';
+    if (r[secondary.status] === 'done' && r[secondary.delay] !== null) {
+      const sd = r[secondary.delay];
+      const sign = sd >= 0 ? '+' : '';
+      secBadge = (sd > 5)
+        ? `<span class="badge-late">Sí (${sign}${sd} min)</span>`
+        : `<span class="badge-ontime">No (${sign}${sd} min)</span>`;
+    }
+
+    return `<tr>
+      <td>${fmtDate(r.date)}</td>
+      <td>${op}</td>
+      <td>${ruta}</td>
+      <td>${secBadge}</td>
+      <td><span class="badge-late">+${r[pd]} min</span></td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="5" style="text-align:center;color:var(--text3);padding:20px">Sin viajes ${eventLabel} en este periodo</td></tr>`;
+}
+
+// ── Modal ─────────────────────────────────────────────────────────────────────
+function openModal(groupName){
+  const data = getFiltered().filter(r=>(r.group||'Sin grupo')===groupName);
+  const {total,reliable,onTime,late,noData,ns} = calcNS(data);
+  const dates = [...new Set(data.map(r=>r.date))].sort();
+  const color = ns>=95?'var(--green)':ns>=85?'var(--amber)':'var(--red)';
+
+  document.getElementById('modalTitle').textContent = groupName;
+  document.getElementById('modalSub').textContent =
+    `${dateRangeLabel(dates)} · ${dates.length} día(s) · ${total} viajes`;
+
+  document.getElementById('modalKpis').innerHTML = `
+    <div class="modal-kpi"><div class="mv" style="color:${color}">${ns!==null?ns+'%':'—'}</div><div class="ml">${metricFields().label}</div></div>
+    <div class="modal-kpi"><div class="mv" style="color:var(--green)">${onTime}</div><div class="ml">A tiempo</div></div>
+    <div class="modal-kpi"><div class="mv" style="color:var(--red)">${late}</div><div class="ml">Con retraso</div></div>
+    <div class="modal-kpi"><div class="mv">${total}</div><div class="ml">Total</div></div>
+    <div class="modal-kpi"><div class="mv" style="color:var(--text3)">${noData}</div><div class="ml">Sin dato</div></div>
+  `;
+
+  document.getElementById('modalOverlay').style.display='flex';
+  buildLateTable(data);
+
+  if(modalChart){ modalChart.destroy(); modalChart=null; }
+  const {status:sf, delay:df, shortLabel} = metricFields();
+  const nsPerDay = dates.map(d=>{ const {ns}=calcNS(data.filter(r=>r.date===d)); return ns; });
+  const ctx = document.getElementById('modalChart').getContext('2d');
+  modalChart = new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels: dates.map(fmtDate),
+      datasets:[
+        { label:'A tiempo', data:dates.map(d=>data.filter(r=>r.date===d&&r[sf]==='done'&&r[df]<=5).length),
+          backgroundColor:'rgba(58,160,255,0.7)', borderRadius:4, stack:'s' },
+        { label:'Con retraso', data:dates.map(d=>data.filter(r=>r.date===d&&r[sf]==='done'&&r[df]>5).length),
+          backgroundColor:'rgba(224,85,85,0.7)', borderRadius:4, stack:'s' },
+        { label:`${shortLabel} (%)`, data:nsPerDay, type:'line',
+          borderColor:'#ffd166', backgroundColor:'transparent',
+          pointBackgroundColor: nsPerDay.map(v=>v===null?'transparent':v>=95?'#3aa0ff':v>=85?'#f5a623':'#e05555'),
+          pointRadius:5, tension:0.3, yAxisID:'y2', spanGaps:false }
+      ]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      interaction:{mode:'index',intersect:false},
+      plugins:{
+        legend:{labels:{color:'#8aa4c4',font:{size:11},boxWidth:12}},
+        tooltip:{backgroundColor:'#0b141f',borderColor:'#1a2c40',borderWidth:1}
+      },
+      scales:{
+        x:{ticks:{color:'#8aa4c4'},grid:{color:'rgba(58,160,255,0.06)'},stacked:true},
+        y:{ticks:{color:'#8aa4c4',font:{size:10}},grid:{color:'rgba(58,160,255,0.06)'},stacked:true,
+           title:{display:true,text:'Viajes',color:'#4a6a8a',font:{size:10}}},
+        y2:{position:'right',min:0,max:100,ticks:{color:'#ffd166',font:{size:10},callback:v=>v+'%'},
+            grid:{display:false},title:{display:true,text:`${shortLabel} %`,color:'#ffd166',font:{size:10}}}
+      }
+    }
+  });
+}
+
+function closeModal(){
+  document.getElementById('modalOverlay').style.display='none';
+  if(modalChart){ modalChart.destroy(); modalChart=null; }
+}
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
+</script>
+</body>
+</html>
