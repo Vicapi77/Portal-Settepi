@@ -1460,8 +1460,8 @@ function selPlant(p){
 }
 
 // Drag & drop
-['xl','csv'].forEach(t=>{
-  const uz=$(  `uz-${t}`);
+['xl'].forEach(t=>{
+  const uz=$(`uz-${t}`);
   uz.addEventListener('dragover',e=>{e.preventDefault();uz.classList.add('drag');});
   uz.addEventListener('dragleave',()=>uz.classList.remove('drag'));
   uz.addEventListener('drop',e=>{
