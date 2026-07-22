@@ -1235,24 +1235,43 @@ function parseCsvRowsRaw(text){
   });
 }
 
+function normName(s){
+  return String(s||'').trim().toUpperCase().replace(/\s+/g,' ');
+}
+// Misma normalización que usa semaforo-viajes.html al leer la plantilla:
+// quita el ".0" que Excel a veces agrega a IDs numéricos exportados a CSV.
+function normWorkerId(v){
+  if(v==null) return '';
+  return String(v).trim().replace(/\.0+$/,'');
+}
+
 function extractSemaforoRows(rows){
   if(!rows||!rows.length) return [];
   const headers = Object.keys(rows[0]||{});
-  const findCol = (...names)=>names.find(n=>headers.some(h=>h.trim()===n));
-  const colNom  = findCol('no. de nomina','worker_id','nomina','nómina','NOMINA');
-  const colCar  = findCol('car','Car','CAR','unidad','unit','vehiculo');
-  if(!colNom) return []; // el archivo no trae columna de nómina: nada que mandarle al semáforo
+  // Comparación insensible a mayúsculas/espacios — así detecta la columna
+  // sin importar si el CSV la trae como "worker_id", "Worker_ID", "WORKER ID", etc.
+  // Devuelve el nombre REAL del encabezado (no el candidato), para poder leer
+  // el valor correctamente sin importar su capitalización original.
+  const findCol = (...names)=>{
+    const wanted = names.map(n=>n.trim().toLowerCase());
+    return headers.find(h=>wanted.includes(h.trim().toLowerCase()));
+  };
+  const colNom  = findCol('no. de nomina','worker_id','workerid','worker id','nomina','nómina','no nomina','num_nomina','id_empleado','employee_id');
+  const colCar  = findCol('car','unidad','unit','vehiculo','vehículo');
 
   return rows
     .filter(r=>!(r['group']||'').toLowerCase().includes('especiales'))
     .map(r=>({
       id: r.id||'',
-      worker_id: (r[colNom]||'').trim(),
+      worker_id: colNom ? normWorkerId(r[colNom]) : '',
+      nombre: normName(r.operador||''),
       fecha: r.start_date||r.date||'',
       shift: (r.shift||'IN').toUpperCase(),
       car: colCar ? (r[colCar]||'').trim() : ''
     }))
-    .filter(r=>r.id && r.worker_id && r.fecha);
+    // El nombre del operador siempre viene en este CSV — sirve de respaldo
+    // aunque ahora sí capturemos la nómina cuando la columna exista.
+    .filter(r=>r.id && r.nombre && r.fecha);
 }
 
 function parseCsvForSemaforo(text){
@@ -1262,7 +1281,7 @@ function parseCsvForSemaforo(text){
 async function saveSemaforoViajes(newRows){
   const el = document.getElementById('fbStatusSemaforo');
   const set = (msg,color='#a8c0d4')=>{ if(el){el.textContent=msg;el.style.color=color;} };
-  if(!newRows||!newRows.length){ set('🚦 Semáforo: sin nómina en el archivo','#a8c0d4'); return; }
+  if(!newRows||!newRows.length){ set('🚦 Semáforo: sin operador/fecha en el archivo','#a8c0d4'); return; }
   set('⏳ Semáforo: verificando duplicados…','#f5a623');
   try{
     const snap = await getDocs(collection(db,'viajes_semaforo'));
