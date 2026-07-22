@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal Settepi — Saltillo</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:        #070c12;
+  --bg2:       #0b141f;
+  --bg3:       #0f1a2a;
+  --border:    #1a2c40;
+  --accent:    #3aa0ff;
+  --accent2:   #1f6feb;
+  --accent-dim:#1a3350;
+  --text:      #e6eef8;
+  --text2:     #8aa4c4;
+  --text3:     #4a6a8a;
+  --amber:     #f5a623;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:
+    radial-gradient(ellipse 900px 500px at 15% -10%, rgba(58,160,255,0.10), transparent 60%),
+    radial-gradient(ellipse 700px 500px at 100% 10%, rgba(31,111,235,0.08), transparent 60%),
+    linear-gradient(rgba(7,12,18,.87),rgba(7,12,18,.87)),
+    url('imagen.png') center/cover no-repeat fixed;
+  color:var(--text);
+  font-family:'DM Sans',sans-serif;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+
+/* ── Status ticker ── */
+.ticker{
+  border-bottom:1px solid var(--border);
+  padding:9px 32px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  font-family:'DM Mono',monospace;
+  font-size:0.7rem;
+  color:var(--text3);
+  letter-spacing:0.3px;
+}
+.ticker-left{display:flex;align-items:center;gap:8px}
+.pulse{width:6px;height:6px;border-radius:50%;background:var(--accent);
+  box-shadow:0 0 0 0 rgba(58,160,255,0.6);animation:pulse 2.2s infinite}
+@keyframes pulse{
+  0%{box-shadow:0 0 0 0 rgba(58,160,255,0.5)}
+  70%{box-shadow:0 0 0 7px rgba(58,160,255,0)}
+  100%{box-shadow:0 0 0 0 rgba(58,160,255,0)}
+}
+.ticker-right{color:var(--text3)}
+.ticker-right span{color:var(--text2)}
+
+/* ── Main ── */
+main{flex:1;display:flex;flex-direction:column;justify-content:center;padding:48px 32px 64px}
+.hero{max-width:1180px;margin:0 auto 56px;text-align:left;width:100%}
+.eyebrow{
+  font-family:'DM Mono',monospace;
+  font-size:0.72rem;
+  letter-spacing:2.5px;
+  color:var(--accent);
+  text-transform:uppercase;
+  margin-bottom:14px;
+}
+.hero h1{
+  font-family:'DM Serif Display',serif;
+  font-size:clamp(2.4rem,6vw,4rem);
+  line-height:1.05;
+  color:var(--text);
+  margin-bottom:14px;
+}
+.hero h1 em{font-style:italic;color:var(--accent)}
+.hero p{
+  color:var(--text2);
+  font-size:1.02rem;
+  max-width:560px;
+  line-height:1.55;
+}
+
+/* ── Cards ── */
+.grid{
+  max-width:1180px;
+  margin:0 auto;
+  width:100%;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:18px;
+}
+.card{
+  background:linear-gradient(160deg, rgba(11,20,31,.80), rgba(15,26,42,.85));
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+  border:1px solid var(--border);
+  border-radius:16px;
+  padding:26px 24px;
+  text-decoration:none;
+  color:inherit;
+  position:relative;
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+  gap:14px;
+  transition:border-color 0.2s, transform 0.2s, background 0.2s;
+}
+.card::before{
+  content:'';
+  position:absolute; inset:0;
+  background:linear-gradient(160deg, rgba(58,160,255,0.07), transparent 55%);
+  opacity:0;
+  transition:opacity 0.2s;
+}
+.card:hover{
+  border-color:var(--accent2);
+  background:linear-gradient(160deg, rgba(15,26,42,.88), rgba(20,34,54,.92));
+  transform:translateY(-2px);
+}
+.card:hover::before{opacity:1}
+.card-num{
+  font-family:'DM Mono',monospace;
+  font-size:0.68rem;
+  color:var(--text3);
+  letter-spacing:1px;
+}
+.card-icon{
+  width:42px;height:42px;
+  border-radius:10px;
+  background:var(--accent-dim);
+  border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.15rem;
+}
+.card h2{
+  font-family:'DM Serif Display',serif;
+  font-size:1.28rem;
+  color:var(--text);
+  line-height:1.25;
+}
+.card p{
+  color:var(--text2);
+  font-size:0.86rem;
+  line-height:1.5;
+  flex:1;
+}
+.card-cta{
+  font-family:'DM Mono',monospace;
+  font-size:0.72rem;
+  color:var(--accent);
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.card:hover .card-cta{gap:10px}
+.card-cta .arrow{transition:transform 0.2s}
+.card:hover .card-cta .arrow{transform:translateX(2px)}
+
+footer{
+  border-top:1px solid var(--border);
+  padding:16px 32px;
+  text-align:center;
+  font-family:'DM Mono',monospace;
+  font-size:0.66rem;
+  color:var(--text3);
+  letter-spacing:0.3px;
+}
+
+@media (max-width:900px){
+  .grid{grid-template-columns:repeat(2,1fr)}
+}
+@media (max-width:640px){
+  .ticker{flex-direction:column;align-items:flex-start;gap:4px;padding:10px 20px}
+  main{padding:36px 20px 48px}
+  .hero{margin-bottom:36px}
+  .grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<div class="ticker">
+  <div class="ticker-left">
+    <span class="pulse"></span>
+    <span>SISTEMAS EN LÍNEA</span>
+  </div>
+  <div class="ticker-right">Saltillo, Coahuila · <span id="clock">—</span></div>
+</div>
+
+<main>
+  <div class="hero">
+    <div class="eyebrow">Portal de operaciones</div>
+    <h1>Settepi<br><em>transporte de personal.</em></h1>
+    <p>Cuatro tableros conectados a la operación: nivel de servicio, estado de viajes en vivo, puntualidad por operador y cumplimiento de distancia. Elige uno para comenzar.</p>
+  </div>
+
+  <div class="grid">
+    <a class="card" href="nivel-servicio.html">
+      <span class="card-num">01</span>
+      <div class="card-icon">🏁</div>
+      <h2>Nivel de Servicio</h2>
+      <p>Cumplimiento global y por cliente, tendencia diaria y detalle de viajes con retraso.</p>
+      <span class="card-cta">Abrir tablero <span class="arrow">→</span></span>
+    </a>
+
+    <a class="card" href="semaforo-viajes.html">
+      <span class="card-num">02</span>
+      <div class="card-icon">🚦</div>
+      <h2>Semáforo de Viajes</h2>
+      <p>Estado en vivo de cada viaje del día, ruta por ruta y operador por operador.</p>
+      <span class="card-cta">Abrir tablero <span class="arrow">→</span></span>
+    </a>
+
+    <a class="card" href="puntualidad-operadores.html">
+      <span class="card-num">03</span>
+      <div class="card-icon">📋</div>
+      <h2>Puntualidad de Operadores</h2>
+      <p>Historial de puntualidad, actas y seguimiento individual por operador.</p>
+      <span class="card-cta">Abrir tablero <span class="arrow">→</span></span>
+    </a>
+
+    <a class="card" href="distancia-va.html">
+      <span class="card-num">04</span>
+      <div class="card-icon">📍</div>
+      <h2>Distancia VA</h2>
+      <p>Cumplimiento de distancia por operador, ruta y planta contra la meta establecida.</p>
+      <span class="card-cta">Abrir tablero <span class="arrow">→</span></span>
+    </a>
+  </div>
+</main>
+
+<footer>PORTAL-SETTEPI · FIREBASE COMPARTIDO</footer>
+
+<script>
+function tick(){
+  const now = new Date();
+  const h = String(now.getHours()).padStart(2,'0');
+  const m = String(now.getMinutes()).padStart(2,'0');
+  const s = String(now.getSeconds()).padStart(2,'0');
+  document.getElementById('clock').textContent = `${h}:${m}:${s}`;
+}
+tick();
+setInterval(tick, 1000);
+</script>
+
+</body>
+</html>
